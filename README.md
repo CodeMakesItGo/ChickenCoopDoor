@@ -8,7 +8,7 @@ This allows you to monitor your chicken coop door remotely, open and close it re
 
 YouTube build here: https://www.youtube.com/watch?v=RmLc_RDQBD4
 
-Debug steps if you are having trouble getting this to work:
+# Debug steps if you are having trouble getting this to work:
 
 Test #1:
 First thing is to test the relay polarity switcher. To verify, if you touch 5V to the IN1 and IN2 at the same time, the motor should start moving out. 
@@ -41,7 +41,7 @@ Once it is working, to test the entire system follow these steps.
 The idea is that the door will stay shut if you briefly lose power at night. And stay open during the day in the same scenario.
 
 
-All parts used in this project:
+# All parts used in this project:
 
 WiFi Smart Garage Door Controller
 https://amzn.to/3ikQDJ0
