@@ -7,6 +7,7 @@
 
 //Pin assignments
 #define TOGGLER_INPUT PD2 
+#define CLOSED_SENSOR PD3 
 #define MOTOR_CONTROL PD4 
 #define LED_OUTPUT PD5 
 
@@ -24,10 +25,29 @@ void setup()
 
   //Pin Setup 
   pinMode(TOGGLER_INPUT, INPUT_PULLUP);
+  pinMode(CLOSED_SENSOR, INPUT_PULLUP);
   pinMode(LED_OUTPUT, OUTPUT);
   pinMode(MOTOR_CONTROL, OUTPUT);
   digitalWrite(LED_OUTPUT, HIGH);
   digitalWrite(MOTOR_CONTROL, HIGH);
+
+  //Delay 2 seconds for the garage sensor to start
+  //Actuator will start to close the door for 2 seconds if it is open
+  // but will switch back to open within this time. This is to midigate if
+  // there is a reset while the door is closed. 
+  delay(2000);
+ 
+  // on startup, if door is closed then initilaize the motor to close
+  if(digitalRead(CLOSED_SENSOR) == LOW)
+  {
+    digitalWrite(MOTOR_CONTROL, HIGH);
+    Serial.println("Door is CLOSED");
+  }
+  else
+  {
+    digitalWrite(MOTOR_CONTROL, LOW);
+    Serial.println("Door is OPEN");
+  }
 }
 
 void blink_led()
