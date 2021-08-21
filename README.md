@@ -43,8 +43,11 @@ The idea is that the door will stay shut if you briefly lose power at night. And
 
 # All parts used in this project:
 
-WiFi Smart Garage Door Controller
+120V WiFi Smart Garage Door Controller
 https://amzn.to/3ikQDJ0
+
+5V USB WiFi Smart Garage Door Controller
+https://amzn.to/3mnXkhl
 
 Arduino Nano V3.0 
 https://amzn.to/2KoNETr
@@ -54,6 +57,9 @@ https://amzn.to/3ikQrcK
 
 DC 12v 2 channel relay module
 https://amzn.to/39HqHDn
+
+DC 5V 2 channel relay module
+https://amzn.to/3j30sNQ
 
 8" Linear Actuator (225lbs)
 https://amzn.to/2LGo9xw
