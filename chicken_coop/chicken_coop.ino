@@ -1,7 +1,7 @@
 /* Chick coop door
  * Uses an Arduino Nano
  * to interface to a smart garage door controller 
- * Rev1.1 removed the need for feedback because the garage door app will sync the door location
+ * Rev1.1 removed the need for Sync
  */
 #define VERSION "Chicken Coop Door 1.1\n"
 
@@ -18,18 +18,20 @@ static bool door_open = false;     // Motor output state of door
 
 void setup() 
 {
-  // Start the Serial comms
-  Serial.begin(9600);         
-  delay(10);
-  Serial.println(VERSION);
-
-  //Pin Setup 
-  pinMode(TOGGLER_INPUT, INPUT_PULLUP);
-  pinMode(CLOSED_SENSOR, INPUT_PULLUP);
+  //Pin Outputs
   pinMode(LED_OUTPUT, OUTPUT);
   pinMode(MOTOR_CONTROL, OUTPUT);
   digitalWrite(LED_OUTPUT, HIGH);
   digitalWrite(MOTOR_CONTROL, HIGH);
+  
+  //Pin Inputs 
+  pinMode(TOGGLER_INPUT, INPUT_PULLUP);
+  pinMode(CLOSED_SENSOR, INPUT_PULLUP);
+  
+  // Start the Serial comms
+  Serial.begin(9600);         
+  delay(10);
+  Serial.println(VERSION);
 
   //Delay 2 seconds for the garage sensor to start
   //Actuator will start to close the door for 2 seconds if it is open
@@ -41,11 +43,13 @@ void setup()
   if(digitalRead(CLOSED_SENSOR) == LOW)
   {
     digitalWrite(MOTOR_CONTROL, HIGH);
+    door_open = false;
     Serial.println("Door is CLOSED");
   }
   else
   {
     digitalWrite(MOTOR_CONTROL, LOW);
+    door_open = true;
     Serial.println("Door is OPEN");
   }
 }
