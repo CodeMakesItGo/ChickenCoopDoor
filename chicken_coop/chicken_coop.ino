@@ -10,6 +10,7 @@
 #define CLOSED_SENSOR PD3 
 #define MOTOR_CONTROL PD4 
 #define LED_OUTPUT PD5 
+#define DOOR_STATUS_OUTPUT PD6
 
 #define DEBOUNCE    1500  // 1500 milli second
 #define BLINK_RATE  1000  // 1 second blink rate
@@ -19,6 +20,7 @@ static bool door_open = false;     // Motor output state of door
 void setup() 
 {
   //Pin Outputs
+  pinMode(DOOR_STATUS_OUTPUT, OUTPUT);
   pinMode(LED_OUTPUT, OUTPUT);
   pinMode(MOTOR_CONTROL, OUTPUT);
   digitalWrite(LED_OUTPUT, HIGH);
@@ -43,12 +45,14 @@ void setup()
   if(digitalRead(CLOSED_SENSOR) == LOW)
   {
     digitalWrite(MOTOR_CONTROL, HIGH);
+    digitalWrite(DOOR_STATUS_OUTPUT, HIGH);
     door_open = false;
     Serial.println("Door is CLOSED");
   }
   else
   {
     digitalWrite(MOTOR_CONTROL, LOW);
+    digitalWrite(DOOR_STATUS_OUTPUT, LOW);
     door_open = true;
     Serial.println("Door is OPEN");
   }
@@ -64,6 +68,18 @@ void blink_led()
     blink_time = millis();
     blink = !blink;
     digitalWrite(LED_OUTPUT, blink ? HIGH : LOW);
+
+    //indicate door state
+    if(digitalRead(CLOSED_SENSOR) == LOW)
+    {
+      digitalWrite(DOOR_STATUS_OUTPUT, HIGH);
+      Serial.println("Door is CLOSED");
+    }
+    else
+    {
+      digitalWrite(DOOR_STATUS_OUTPUT, LOW);
+      Serial.println("Door is OPEN");
+    }
   }
 }
 
