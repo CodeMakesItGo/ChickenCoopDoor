@@ -3,8 +3,13 @@
  * to interface to a smart garage door controller 
  * Rev1.1 removed the need for Sync
  * Rev1.2 Fixed issue with reversing actuator direction
+ * Rev1.3 Added external LEDs for power and door
  */
-#define VERSION "Chicken Coop Door 1.2\n"
+#define VERSION "Chicken Coop Door 1.3\n"
+
+//Custom pins
+#define POWER_LED 9
+#define DOOR_LED 10
 
 //Pin assignments
 #define TOGGLER_INPUT PD2 
@@ -18,18 +23,23 @@
 
 #define DEBOUNCE    1500  // 1500 milli second
 #define BLINK_RATE  1000  // 1 second blink rate
+#define FADE_RATE   50    // 20ms fade rate
+#define MAX_BRIGHT  60    // PWM max brightness
 #define MOTOR_DELAY 250   // Short delay so motor doesn't cause voltage drop
 
 static bool door_open = false;     // Motor output state of door
 
 void setup() 
 {
+  //Custom
+  pinMode(POWER_LED, OUTPUT);
+  pinMode(DOOR_LED, OUTPUT);
+  
   //Pin Outputs
   pinMode(DOOR_STATUS_OUTPUT, OUTPUT);
   pinMode(LED_OUTPUT, OUTPUT);
   pinMode(MOTOR_CONTROL_1, OUTPUT);
   pinMode(MOTOR_CONTROL_2, OUTPUT);
-  digitalWrite(LED_OUTPUT, HIGH);
   digitalWrite(MOTOR_CONTROL_1, LOW);
   digitalWrite(MOTOR_CONTROL_2, LOW);
   
@@ -67,6 +77,35 @@ void setup()
   }
 }
 
+void fade_led()
+{
+  static unsigned long fade_time = 0;
+  static int pwm = 0;
+  
+
+  if(millis() - fade_time > FADE_RATE)
+  {
+    fade_time = millis();
+
+    pwm += 1;
+    int pwm_out = pwm;
+
+    if(pwm > MAX_BRIGHT && pwm < (MAX_BRIGHT * 2))
+    {
+      pwm_out = MAX_BRIGHT - (pwm - MAX_BRIGHT);
+    }
+    else if(pwm >= (MAX_BRIGHT * 2))
+    {
+      pwm = 0;
+      pwm_out = 0;
+    }
+
+    analogWrite(LED_OUTPUT, pwm_out); 
+    analogWrite(POWER_LED, pwm_out); 
+  }
+}
+
+
 void blink_led()
 {
   static unsigned long blink_time = 0;
@@ -76,8 +115,7 @@ void blink_led()
   {
     blink_time = millis();
     blink = !blink;
-    digitalWrite(LED_OUTPUT, blink ? HIGH : LOW);
-
+    
     //Analog input read of the door sensor (debug)
     Serial.println(analogRead(CLOSED_SENSOR_A));
 
@@ -85,11 +123,13 @@ void blink_led()
     if(digitalRead(CLOSED_SENSOR_D) == HIGH)
     {
       digitalWrite(DOOR_STATUS_OUTPUT, HIGH);
+      analogWrite(DOOR_LED, MAX_BRIGHT);
       Serial.println("Door is CLOSED");
     }
     else
     {
       digitalWrite(DOOR_STATUS_OUTPUT, LOW);
+      analogWrite(DOOR_LED, 0);
       Serial.println("Door is OPEN");
     }
   }
@@ -131,6 +171,7 @@ void toggle_door()
 void loop() 
 {
   blink_led();
+  fade_led();
     
   if(door_request())
   {
