@@ -24,7 +24,7 @@
 #define DEBOUNCE    1500  // 1500 milli second
 #define BLINK_RATE  1000  // 1 second blink rate
 #define FADE_RATE   50    // 20ms fade rate
-#define MAX_BRIGHT  60    // PWM max brightness
+#define MAX_BRIGHT  40    // PWM max brightness
 #define MOTOR_DELAY 250   // Short delay so motor doesn't cause voltage drop
 
 static bool door_open = false;     // Motor output state of door
