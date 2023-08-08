@@ -4,8 +4,9 @@
  * Rev1.1 removed the need for Sync
  * Rev1.2 Fixed issue with reversing actuator direction
  * Rev1.3 Added external LEDs for power and door
+ * Rev1.4 Fixed door close on startup
  */
-#define VERSION "Chicken Coop Door 1.3\n"
+#define VERSION "Chicken Coop Door 1.4\n"
 
 //Custom pins
 #define POWER_LED 9
@@ -31,6 +32,11 @@ static bool door_open = false;     // Motor output state of door
 
 void setup() 
 {
+  // Start the Serial comms
+  Serial.begin(9600);         
+  delay(10);
+  Serial.println(VERSION);
+  
   //Custom
   pinMode(POWER_LED, OUTPUT);
   pinMode(DOOR_LED, OUTPUT);
@@ -40,41 +46,36 @@ void setup()
   pinMode(LED_OUTPUT, OUTPUT);
   pinMode(MOTOR_CONTROL_1, OUTPUT);
   pinMode(MOTOR_CONTROL_2, OUTPUT);
-  digitalWrite(MOTOR_CONTROL_1, LOW);
+  digitalWrite(MOTOR_CONTROL_1, HIGH);
   digitalWrite(MOTOR_CONTROL_2, LOW);
+
+  //Delay 1 seconds for the garage sensor to start
+  delay(1000);
   
   //Pin Inputs 
   pinMode(TOGGLER_INPUT, INPUT_PULLUP);
   pinMode(CLOSED_SENSOR_D, INPUT);
   pinMode(CLOSED_SENSOR_A, INPUT);
-  
-  // Start the Serial comms
-  Serial.begin(9600);         
-  delay(10);
-  Serial.println(VERSION);
-
-  //Delay 1 seconds for the garage sensor to start
-  delay(1000);
  
   // on startup, if door is closed then initilaize the motor to close
   if(digitalRead(CLOSED_SENSOR_D) == LOW)
   {
-    digitalWrite(MOTOR_CONTROL_1, HIGH);
-    delay(MOTOR_DELAY);
-    digitalWrite(MOTOR_CONTROL_2, HIGH);
-    digitalWrite(DOOR_STATUS_OUTPUT, HIGH);
-    door_open = false;
-    Serial.println("Door is OPEN");
-  }
-  else
-  {
     digitalWrite(MOTOR_CONTROL_1, LOW);
-    delay(MOTOR_DELAY);
     digitalWrite(MOTOR_CONTROL_2, LOW);
     digitalWrite(DOOR_STATUS_OUTPUT, LOW);
     door_open = true;
-    Serial.println("Door is CLOSED");
+    Serial.println("Door is already OPEN");
   }
+  else
+  {
+    digitalWrite(MOTOR_CONTROL_1, HIGH);
+    digitalWrite(MOTOR_CONTROL_2, HIGH);
+    digitalWrite(DOOR_STATUS_OUTPUT, HIGH);
+    door_open = false;
+    Serial.println("Door is already CLOSED");
+  }
+
+  
 }
 
 void fade_led()
