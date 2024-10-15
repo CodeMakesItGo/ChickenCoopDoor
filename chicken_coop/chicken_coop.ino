@@ -6,11 +6,12 @@
  * Rev1.3 Added external LEDs for power and door
  * Rev1.4 Fixed door close on startup
  */
-#define VERSION "Chicken Coop Door 1.4\n"
+#define VERSION "Chicken Coop Door 1.5\n"
 
 //Custom pins
-#define POWER_LED 9
-#define DOOR_LED 10
+#define EXT_DOOR_LED 8
+#define EXT_POWER_LED 9
+
 
 //Pin assignments
 #define TOGGLER_INPUT PD2 
@@ -38,8 +39,8 @@ void setup()
   Serial.println(VERSION);
   
   //Custom
-  pinMode(POWER_LED, OUTPUT);
-  pinMode(DOOR_LED, OUTPUT);
+  pinMode(EXT_POWER_LED, OUTPUT);
+  pinMode(EXT_DOOR_LED, OUTPUT);
   
   //Pin Outputs
   pinMode(DOOR_STATUS_OUTPUT, OUTPUT);
@@ -102,7 +103,7 @@ void fade_led()
     }
 
     analogWrite(LED_OUTPUT, pwm_out); 
-    analogWrite(POWER_LED, pwm_out); 
+    analogWrite(EXT_POWER_LED, pwm_out); 
   }
 }
 
@@ -124,13 +125,15 @@ void blink_led()
     if(digitalRead(CLOSED_SENSOR_D) == HIGH)
     {
       digitalWrite(DOOR_STATUS_OUTPUT, HIGH);
-      analogWrite(DOOR_LED, MAX_BRIGHT);
+      digitalWrite(EXT_DOOR_LED, HIGH);
+      //analogWrite(EXT_DOOR_LED, MAX_BRIGHT);
       Serial.println("Door is CLOSED");
     }
     else
     {
       digitalWrite(DOOR_STATUS_OUTPUT, LOW);
-      analogWrite(DOOR_LED, 0);
+      digitalWrite(EXT_DOOR_LED, LOW);
+      //analogWrite(EXT_DOOR_LED, 0);
       Serial.println("Door is OPEN");
     }
   }
