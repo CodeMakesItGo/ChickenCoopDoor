@@ -5,6 +5,7 @@
  * Rev1.2 Fixed issue with reversing actuator direction
  * Rev1.3 Added external LEDs for power and door
  * Rev1.4 Fixed door close on startup
+ * Rev1.5 Add ext LED outputs to PCB rev2.3
  */
 #define VERSION "Chicken Coop Door 1.5\n"
 
