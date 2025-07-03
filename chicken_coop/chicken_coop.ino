@@ -32,7 +32,7 @@
 #define MAX_BRIGHT  40    // PWM max brightness
 #define MOTOR_DELAY 500   // Short delay so motor doesn't cause voltage drop
 
-static bool door_open = false;     // Motor o5utput state of door
+static bool door_open = false;     // Motor output state of door
 static unsigned char counter = 0;  //toggle counter
 
 void setup() 
