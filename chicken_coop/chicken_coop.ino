@@ -6,8 +6,9 @@
  * Rev1.3 Added external LEDs for power and door
  * Rev1.4 Fixed door close on startup
  * Rev1.5 Add ext LED outputs to PCB rev2.3
+ * Rev1.6 Updated toggler debounce and moved to 115200 baud
  */
-#define VERSION "Chicken Coop Door 1.5\n"
+#define VERSION "Chicken Coop Door 1.6\n"
 
 //Custom pins
 #define EXT_DOOR_LED 8
@@ -24,24 +25,29 @@
 #define CLOSED_SENSOR_A A1
 
 
-#define DEBOUNCE    1500  // 1500 milli second
-#define BLINK_RATE  1000  // 1 second blink rate
+#define TOGGLE_DEBOUNCE    12  // 1200 milli second
+#define DOOR_RATE   1000  // 1 second test rate
+#define TOGGLE_RATE 100  // 1 second test rate
 #define FADE_RATE   50    // 20ms fade rate
 #define MAX_BRIGHT  40    // PWM max brightness
-#define MOTOR_DELAY 250   // Short delay so motor doesn't cause voltage drop
+#define MOTOR_DELAY 500   // Short delay so motor doesn't cause voltage drop
 
-static bool door_open = false;     // Motor output state of door
+static bool door_open = false;     // Motor o5utput state of door
+static unsigned char counter = 0;  //toggle counter
 
 void setup() 
 {
   // Start the Serial comms
-  Serial.begin(9600);         
+  Serial.begin(115200);         
   delay(10);
   Serial.println(VERSION);
   
   //Custom
   pinMode(EXT_POWER_LED, OUTPUT);
   pinMode(EXT_DOOR_LED, OUTPUT);
+
+  analogWrite(LED_OUTPUT, MAX_BRIGHT); 
+  analogWrite(EXT_POWER_LED, MAX_BRIGHT); 
   
   //Pin Outputs
   pinMode(DOOR_STATUS_OUTPUT, OUTPUT);
@@ -77,14 +83,14 @@ void setup()
     Serial.println("Door is already CLOSED");
   }
 
-  
+  analogWrite(LED_OUTPUT, 0); 
+  analogWrite(EXT_POWER_LED, 0); 
 }
 
 void fade_led()
 {
   static unsigned long fade_time = 0;
   static int pwm = 0;
-  
 
   if(millis() - fade_time > FADE_RATE)
   {
@@ -108,33 +114,28 @@ void fade_led()
   }
 }
 
-
-void blink_led()
+void door_led()
 {
-  static unsigned long blink_time = 0;
-  static bool blink = true;
+  static unsigned long door_time = 0;
 
-  if(millis() - blink_time > BLINK_RATE)
+  if(millis() - door_time > DOOR_RATE)
   {
-    blink_time = millis();
-    blink = !blink;
-    
+    door_time = millis();
+   
     //Analog input read of the door sensor (debug)
-    Serial.println(analogRead(CLOSED_SENSOR_A));
+    //Serial.println(analogRead(CLOSED_SENSOR_A));
 
     //indicate door state
     if(digitalRead(CLOSED_SENSOR_D) == HIGH)
     {
       digitalWrite(DOOR_STATUS_OUTPUT, HIGH);
       digitalWrite(EXT_DOOR_LED, HIGH);
-      //analogWrite(EXT_DOOR_LED, MAX_BRIGHT);
       Serial.println("Door is CLOSED");
     }
     else
     {
       digitalWrite(DOOR_STATUS_OUTPUT, LOW);
       digitalWrite(EXT_DOOR_LED, LOW);
-      //analogWrite(EXT_DOOR_LED, 0);
       Serial.println("Door is OPEN");
     }
   }
@@ -143,20 +144,32 @@ void blink_led()
 bool door_request()
 {
   static unsigned long timer = 0;
-
+  
+  static bool waiting_for_release = false;
   bool rtn = false;
-  if(digitalRead(TOGGLER_INPUT) == LOW)
+
+  if(millis() - timer > TOGGLE_RATE)
   {
-    if(millis() - timer > DEBOUNCE)
+    timer = millis();
+    bool pressed = digitalRead(TOGGLER_INPUT) == LOW;
+    //Serial.println(counter);
+    if(pressed)
     {
-      rtn = true;
-      Serial.println("Request received");
-      timer = millis();
+      counter++;
+      if(counter > TOGGLE_DEBOUNCE && !waiting_for_release) 
+      {
+        rtn = true;
+        waiting_for_release = true;
+        Serial.println("Request received");
+      }
     }
-  }
-  else
-  {
-     timer = millis();
+    else
+    {
+      if(counter > 0)
+        counter--;
+      else
+        waiting_for_release = false;
+    }
   }
 
   return rtn;
@@ -170,12 +183,15 @@ void toggle_door()
   delay(MOTOR_DELAY); 
   digitalWrite(MOTOR_CONTROL_2, door_open ? LOW : HIGH);
   
-  Serial.println("Door is " + String(door_open ? "opening" : "closing"));
+  if(door_open)
+    Serial.println("Request to open");
+  else
+    Serial.println("Request to close");
 }
 
 void loop() 
 {
-  blink_led();
+  door_led();
   fade_led();
     
   if(door_request())
