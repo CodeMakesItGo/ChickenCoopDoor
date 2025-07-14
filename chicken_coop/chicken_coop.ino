@@ -7,8 +7,9 @@
  * Rev1.4 Fixed door close on startup
  * Rev1.5 Add ext LED outputs to PCB rev2.3
  * Rev1.6 Updated toggler debounce and moved to 115200 baud
+ * Rev1.7 Updated relay switch process and increased to 1000ms
  */
-#define VERSION "Chicken Coop Door 1.6\n"
+#define VERSION "Chicken Coop Door 1.7\n"
 
 //Custom pins
 #define EXT_DOOR_LED 8
@@ -18,19 +19,19 @@
 //Pin assignments
 #define TOGGLER_INPUT PD2 
 #define CLOSED_SENSOR_D PD3 
-#define MOTOR_CONTROL_1 PD4 
+#define MOTOR_CONTROL_1 PD4 // When off, 12V out
 #define LED_OUTPUT PD5 
 #define DOOR_STATUS_OUTPUT PD6
-#define MOTOR_CONTROL_2 PD7 
+#define MOTOR_CONTROL_2 PD7  //When off, GND out
 #define CLOSED_SENSOR_A A1
 
 
-#define TOGGLE_DEBOUNCE    12  // 1200 milli second
+#define TOGGLE_DEBOUNCE    10  // 1000 milli second
 #define DOOR_RATE   1000  // 1 second test rate
 #define TOGGLE_RATE 100  // 1 second test rate
 #define FADE_RATE   50    // 20ms fade rate
 #define MAX_BRIGHT  40    // PWM max brightness
-#define MOTOR_DELAY 500   // Short delay so motor doesn't cause voltage drop
+#define MOTOR_DELAY 1000   // Short delay so motor doesn't cause voltage drop
 
 static bool door_open = false;     // Motor output state of door
 static unsigned char counter = 0;  //toggle counter
@@ -179,8 +180,13 @@ void toggle_door()
 {
   door_open = !door_open;
   
-  digitalWrite(MOTOR_CONTROL_1, door_open ? LOW : HIGH);
+  //Ground both outputs first then wait
+  digitalWrite(MOTOR_CONTROL_1, HIGH);
+  digitalWrite(MOTOR_CONTROL_2, LOW);
+  
   delay(MOTOR_DELAY); 
+
+  digitalWrite(MOTOR_CONTROL_1, door_open ? LOW : HIGH);
   digitalWrite(MOTOR_CONTROL_2, door_open ? LOW : HIGH);
   
   if(door_open)
